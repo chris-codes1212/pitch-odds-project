@@ -17,7 +17,7 @@ At present, the project is centered around a comprehensive Jupyter Notebook (`pi
 * **Feature Importance:** The model identified "Situational Gravity" (the count) as the primary driver of outcomes, with two-strike counts (1-2, 3-2, etc.) accounting for over 50% of the predictive power.
 
 ## 📁 Repository Structure
-```text
+
 ├── pitch_by_pitch.ipynb    # Core research, feature engineering, and model training
 ├── requirements.txt        # Project dependencies
 └── README.md               # Project documentation
