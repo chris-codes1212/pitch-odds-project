@@ -31,17 +31,20 @@ Python 3.11+
 Setup
 Clone the repository:
 
-Bash
+```Bash
 git clone [https://github.com/your-username/mlb-pitch-odds.git](https://github.com/your-username/mlb-pitch-odds.git)
 cd mlb-pitch-odds
 Install dependencies: It is recommended to use a virtual environment. You can now install all required packages (including pybaseball, scikit-learn, xgboost, and pandas) using the provided requirements file:
+```
 
-Bash
+```Bash
 python3.11 -m pip install -r requirements.txt
 Run the model: Launch the notebook to fetch data and begin training:
+```
 
-Bash
+```Bash
 jupyter notebook pitch_by_pitch.ipynb
+```
 
 🛤️ Roadmap
 [ ] Phase 2: Integrate physical metrics (Mean Spin Rate, Extension) using Normal-Normal EB Shrinkage.
