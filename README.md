@@ -1,4 +1,3 @@
-Markdown
 # MLB Live-Pitch Odds Model
 
 This repository contains a machine learning pipeline designed to generate real-time, pitch-by-pitch betting odds for Major League Baseball (MLB). By leveraging high-fidelity Statcast data, the model predicts the probability of discrete pitch outcomes (Strikes, Balls, Hits) to provide a foundation for live betting interfaces.
@@ -20,6 +19,7 @@ At present, the project is centered around a comprehensive Jupyter Notebook (`pi
 ## 📁 Repository Structure
 ```text
 ├── pitch_by_pitch.ipynb    # Core research, feature engineering, and model training
+├── requirements.txt        # Project dependencies
 └── README.md               # Project documentation
 Note: This repository is actively expanding to include a dedicated backend (API) and frontend (Dashboard) service.
 
@@ -27,29 +27,21 @@ Note: This repository is actively expanding to include a dedicated backend (API)
 Prerequisites
 Python 3.11+
 
-pybaseball
-
-scikit-learn
-
-pandas
-
-scipy
-
-matplotlib / seaborn
-
 Setup
 Clone the repository:
 
 Bash
 git clone [https://github.com/your-username/mlb-pitch-odds.git](https://github.com/your-username/mlb-pitch-odds.git)
-Install the necessary packages:
+cd mlb-pitch-odds
+Install dependencies: It is recommended to use a virtual environment. You can now install all required packages (including pybaseball, scikit-learn, xgboost, and pandas) using the provided requirements file:
 
 Bash
-python3.11 -m pip install pybaseball scikit-learn pandas scipy matplotlib seaborn python-pptx
-Run the notebook to fetch data and train the model:
+python3.11 -m pip install -r requirements.txt
+Run the model: Launch the notebook to fetch data and begin training:
 
 Bash
 jupyter notebook pitch_by_pitch.ipynb
+
 🛤️ Roadmap
 [ ] Phase 2: Integrate physical metrics (Mean Spin Rate, Extension) using Normal-Normal EB Shrinkage.
 
