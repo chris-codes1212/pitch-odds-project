@@ -42,7 +42,7 @@ def map_outcome_coarse(row):
 def load_data():
     # load data as df from pybaseball
     pybaseball.cache.enable()
-    df = statcast(start_dt='2021-06-24', end_dt='2025-06-24')
+    df = statcast(start_dt='2023-06-24', end_dt='2025-05-24')
 
     # copy df for safety, keep original df in tact
     df_copy = df.copy()
@@ -69,6 +69,7 @@ def load_data():
         random_state=42)
     
     mapping = {'strike': 0, 'ball': 1, 'hit': 2, 'non-strike foul': 3}
+    labels = ['strike', 'ball', 'hit', 'non-strike foul']
 
     y_train = train_df["outcome_coarse"].map(mapping)
     y_test = test_df["outcome_coarse"].map(mapping)
@@ -78,4 +79,4 @@ def load_data():
     X_test = test_df.drop(columns=["outcome_coarse"])
     X_val = val_df.drop(columns=["outcome_coarse"])
 
-    return X_train, X_test, X_val, y_train, y_test, y_val
+    return X_train, X_test, X_val, y_train, y_test, y_val, labels

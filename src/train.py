@@ -10,18 +10,21 @@ import joblib
 import math
 
 from sklearn.calibration import CalibratedClassifierCV
-
+import pandas as pd
 # set this globally so that sklean always outputs in pandas df format
 set_config(transform_output="pandas")
 
 def train(config):
 
-    X_train, X_test, X_val, y_train, y_test, y_val = load_data()
+    X_train, X_test, X_val, y_train, y_test, y_val, labels = load_data()
+    
 
     base_pipeline = build_full_pipeline(config)
 
     # Fit base model
     base_pipeline.fit(X_train, y_train)
+    pd.set_option("display.max_columns", None)
+    print(f'Xtrain first col: {X_train.head(1)}')
 
     # # Wrap in calibrator using validation set
     # calibrated_model = CalibratedClassifierCV(
@@ -37,10 +40,10 @@ def train(config):
     loss = log_loss(y_test, preds)
     print(f"Log Loss: {loss}")
 
-    return base_pipeline, {"log_loss": loss}
+    return base_pipeline, {"log_loss": loss, "labels":labels}
 
-def promote_best_model(test_results, logged_model_artifact, model_name="pitch-odds-model"):
-    current_loss = test_results.get("log_loss", 0)
+def promote_best_model(metadata, logged_model_artifact, model_name="pitch-odds-model"):
+    current_loss = metadata.get("log_loss", 0)
     ENTITY = wandb.run.entity
     PROJECT = wandb.run.project
     api = wandb.Api()
@@ -81,17 +84,17 @@ if __name__ == "__main__":
 
     config = wandb.config
 
-    pipeline, loss_dict = train(config)
+    pipeline, metadata = train(config)
 
     joblib.dump(pipeline, 'model.pkl')
-    model_artifact = wandb.Artifact(name="pitch-odds-model", type="model", metadata=loss_dict)
+    model_artifact = wandb.Artifact(name="pitch-odds-model", type="model", metadata=metadata)
     model_artifact.add_file('model.pkl')
     
 
     logged_model_artifact = wandb.log_artifact(model_artifact)
     logged_model_artifact.wait()
 
-    promote_best_model(loss_dict, logged_model_artifact)
+    promote_best_model(metadata, logged_model_artifact)
 
     wandb.finish()
 
