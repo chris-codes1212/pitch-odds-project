@@ -1,0 +1,38 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: "us-east-1"
+    BACKEND_ECR_REPO: "703758696118.dkr.ecr.us-east-1.amazonaws.com/mlb-fastapi-backend"
+    FRONTEND_ECR_REPO: "703758696118.dkr.ecr.us-east-1.amazonaws.com/mlb-streamlit-frontend"
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $BACKEND_ECR_REPO
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $FRONTEND_ECR_REPO
+
+  build:
+    commands:
+      - echo Building backend Docker image...
+      - docker build -t mlb-backend -f backend/Dockerfile backend/
+      - docker tag mlb-backend:latest $BACKEND_ECR_REPO:latest
+
+      - echo Building frontend Docker image...
+      - docker build -t mlb-frontend -f frontend/Dockerfile frontend/
+      - docker tag mlb-frontend:latest $FRONTEND_ECR_REPO:latest
+
+  post_build:
+    commands:
+      - echo Pushing backend image to ECR...
+      - docker push $BACKEND_ECR_REPO:latest
+      - echo Pushing frontend image to ECR...
+      - docker push $FRONTEND_ECR_REPO:latest
+
+      - echo Creating imagedefinitions.json for ECS...
+      - printf '[{"name":"BackendContainer","imageUri":"%s"},{"name":"FrontendContainer","imageUri":"%s"}]' $BACKEND_ECR_REPO:latest $FRONTEND_ECR_REPO:latest > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
