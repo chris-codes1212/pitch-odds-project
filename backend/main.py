@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 import time
 import pandas as pd
+import boto3
+import os
 
 from . import utils
 from .PitchSimulation import PitchSimulation
@@ -32,6 +34,8 @@ def startup_event():
     df = pd.read_parquet(s3_uri)
     df = df.sort_values(["game_pk", "at_bat_number", "pitch_number"])
     app.state.simulation = PitchSimulation(df)
+    dynamodb = boto3.resource("dynamodb", region_name=os.getenv("AWS_REGION", "us-east-1"))
+    table = dynamodb.Table(os.getenv("SESSIONS_TABLE", "PitchBettingSessions"))
 
 
 
