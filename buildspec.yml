@@ -16,11 +16,11 @@ phases:
   build:
     commands:
       - echo Building backend Docker image...
-      - docker build -t mlb-backend -f backend/Dockerfile backend/
+      - docker build -t mlb-backend -f backend/Dockerfile .
       - docker tag mlb-backend:latest $BACKEND_ECR_REPO:latest
 
       - echo Building frontend Docker image...
-      - docker build -t mlb-frontend -f frontend/Dockerfile frontend/
+      - docker build -t mlb-frontend -f frontend/Dockerfile .
       - docker tag mlb-frontend:latest $FRONTEND_ECR_REPO:latest
 
   post_build:
