@@ -17,7 +17,7 @@ if "user_id" not in st.session_state:
 # ---------------------------
 
 def fetch_prediction():
-    response = requests.post(f"{BACKEND_URL}/predict")
+    response = requests.post(f"{BACKEND_URL}/predict", json={'user_id': st.session_state.user_id})
     response.raise_for_status()
     return response.json()
 
