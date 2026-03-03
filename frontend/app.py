@@ -2,9 +2,15 @@ import streamlit as st
 import requests
 import os
 import time
+import uuid
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
+# Create a new user ID per browser session
+
+
+if "user_id" not in st.session_state:
+    st.session_state.user_id = str(uuid.uuid4())
 
 # ---------------------------
 # Backend Helpers
