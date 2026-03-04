@@ -3,6 +3,7 @@ import boto3
 from datetime import datetime, timezone
 from decimal import Decimal
 from botocore.exceptions import ClientError
+from fastapi import HTTPException
 
 DEFAULT_BANKROLL = float(os.getenv("DEFAULT_BANKROLL", "100"))
 SESSION_TTL_SECONDS = int(os.getenv("SESSION_TTL_SECONDS", str(6 * 60 * 60)))
@@ -42,3 +43,26 @@ def get_user(user_id):
         item = create_user(user_id, table)
 
     return item
+
+def advance_pitch(user_id, i):
+    table = get_table()
+
+    try:
+        table.update_item(
+            Key={"user_id": user_id},
+            UpdateExpression="""
+                SET pitch_index = pitch_index + :one
+            """,
+            ConditionExpression="pitch_index = :expected",
+            ExpressionAttributeValues={
+                ":one": Decimal("1"),
+                ":expected":Decimal(str(i))
+  
+            },
+            # ReturnValues="ALL_NEW",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            # Another request already advanced the pitch (double-click, rerun, etc.)
+            raise HTTPException(409, "Pitch already advanced; refresh and try again")
+        raise

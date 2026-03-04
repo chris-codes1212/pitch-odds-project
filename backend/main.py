@@ -37,6 +37,7 @@ def startup_event():
     s3_uri = "s3://statcast-mlb-raw/pitches/heldout_games.parquet"
     df = pd.read_parquet(s3_uri)
     df = df.sort_values(["game_pk", "at_bat_number", "pitch_number"])
+    app.state.df = df
     app.state.simulation = PitchSimulation(df)
 
 
@@ -56,14 +57,21 @@ def predict(req: PeekRequest):
     
     session = sessions.get_user(req.user_id)
 
-    try:
-        row = sim.next_pitch()
-    except StopIteration:
-        return {"message": "Simulation complete"}
+    i = int(session['pitch_index'])
+    df = app.state.df
+    row = df.iloc[i]
 
-    input_df = pd.DataFrame([row])
-    #probs = utils.add_vig(model.predict_proba(input_df)[0])
+    input_df = pd.DataFrame([row[PitchSimulation.FEATURES]])
     probs = model.predict_proba(input_df)[0]
+
+    # try:
+    #     row = sim.next_pitch()
+    # except StopIteration:
+    #     return {"message": "Simulation complete"}
+
+    # input_df = pd.DataFrame([row])
+    # #probs = utils.add_vig(model.predict_proba(input_df)[0])
+    # probs = model.predict_proba(input_df)[0]
 
     probabilities = {
         labels[0]: float(probs[0]),
@@ -80,8 +88,11 @@ def predict(req: PeekRequest):
     total = sum(filtered_probs.values())
     normalized_probs = {k: v / total for k, v in filtered_probs.items()}
 
+    sessions.advance_pitch(req.user_id, i)
+    # next_pitch = i+1
+    # session['pitch_index'] = str(next_pitch)
 
     return {
-        "pitch": row.to_dict(),
+        "pitch": row[PitchSimulation.FEATURES].to_dict(),
         "probabilities": normalized_probs
     }
