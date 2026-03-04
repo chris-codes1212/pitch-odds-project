@@ -13,13 +13,18 @@ def get_table():
     table = dynamodb.Table(os.getenv("SESSIONS_TABLE", "PitchBettingSessions"))
     return table
 
-def create_user(user_id):
+def create_user(user_id, table):
     item = {
         "user_id": user_id,
         "bankroll": Decimal(str(DEFAULT_BANKROLL)),
         "pitch_index": Decimal("0"),
         "bet_history": []
     }
+    # create if not exists (prevents races)
+    table.put_item(
+        Item=item,
+        ConditionExpression="attribute_not_exists(user_id)",
+    )
     return item
 
 # create a function that can retrieve users from the DynamoDB table
@@ -34,6 +39,6 @@ def get_user(user_id):
         # "ttl": ttl_epoch(SESSION_TTL_SECONDS),
 
     else:
-        item = create_user(user_id)
+        item = create_user(user_id, table)
 
     return item
