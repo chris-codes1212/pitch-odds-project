@@ -84,9 +84,12 @@ def render_odds_buttons(vig=0.08):
 
     for i, (label, prob) in enumerate(probs_with_vig_dict.items()):
         is_selected = st.session_state.selected_bet == label
+        
 
         american_odds = prob_to_betting_odds(prob)
         button_label = f"{label.upper()} ({american_odds:+})"
+
+        st.session_state.bet_value = american_odds
 
         if cols[i].button(
             button_label,

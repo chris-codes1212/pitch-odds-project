@@ -66,3 +66,7 @@ def advance_pitch(user_id, i):
             # Another request already advanced the pitch (double-click, rerun, etc.)
             raise HTTPException(409, "Pitch already advanced; refresh and try again")
         raise
+
+# def calc_bet_profit():
+
+# def update_budget():
