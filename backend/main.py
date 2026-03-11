@@ -13,7 +13,7 @@ class PeekRequest(BaseModel):
     user_id: str
 
 app = FastAPI(title='Pitch-by-Pitch MLB Betting')
-
+#
 # Try and load model pipeline
 try:
     ENTITY = 'chris-r-thompson1212-university-of-denver'
