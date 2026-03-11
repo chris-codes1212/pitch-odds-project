@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - python -m pip install --upgrade pip
+      - pip install -r backend/requirements.txt
+      - pip install pandas fastapi uvicorn
+      - export PYTHONPATH=$CODEBUILD_SRC_DIR
+
+  build:
+    commands:
+      - python -m unittest discover -s tests -p "test_main_predict.py"
