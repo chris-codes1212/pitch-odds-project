@@ -3,6 +3,8 @@ from pydantic import BaseModel
 import time
 import pandas as pd
 
+from .user_class import User
+
 from . import utils
 from .PitchSimulation import PitchSimulation
 from . import sessions
@@ -55,9 +57,9 @@ class PredictInput(BaseModel):
 def predict(req: PeekRequest):
     sim = app.state.simulation
     
-    session = sessions.get_user(req.user_id)
+    user = sessions.get_user(req.user_id)
 
-    i = int(session['pitch_index'])
+    i = int(user.get_pitch_index())
     df = app.state.df
     row = df.iloc[i]
 
@@ -88,7 +90,7 @@ def predict(req: PeekRequest):
     total = sum(filtered_probs.values())
     normalized_probs = {k: v / total for k, v in filtered_probs.items()}
 
-    sessions.advance_pitch(req.user_id, i)
+    user.advance_pitch()
     # next_pitch = i+1
     # session['pitch_index'] = str(next_pitch)
 

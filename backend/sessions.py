@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from botocore.exceptions import ClientError
 from fastapi import HTTPException
+from .user_class import User
 
 DEFAULT_BANKROLL = float(os.getenv("DEFAULT_BANKROLL", "100"))
 SESSION_TTL_SECONDS = int(os.getenv("SESSION_TTL_SECONDS", str(6 * 60 * 60)))
@@ -15,18 +16,18 @@ def get_table():
     return table
 
 def create_user(user_id, table):
-    item = {
-        "user_id": user_id,
-        "bankroll": Decimal(str(DEFAULT_BANKROLL)),
-        "pitch_index": Decimal("0"),
-        "bet_history": []
-    }
-    # create if not exists (prevents races)
-    table.put_item(
-        Item=item,
-        ConditionExpression="attribute_not_exists(user_id)",
+    # create a new user with the default bankroll and empty bet history
+    user = User(
+        user_id=user_id,
+        bankroll=DEFAULT_BANKROLL,
+        bet_history=[],
+        pitch_index=0,
+        table=table
     )
-    return item
+
+    user.save_to_db()
+
+    return user
 
 # create a function that can retrieve users from the DynamoDB table
 def get_user(user_id):
@@ -35,14 +36,20 @@ def get_user(user_id):
     if "Item" in resp:
         item = resp["Item"]
 
-        # "created_at": now_iso(),
-        # "updated_at": now_iso(),
-        # "ttl": ttl_epoch(SESSION_TTL_SECONDS),
+        # create a User object from the DynamoDB item
+        user = User(
+            user_id=user_id,
+            bankroll=float(item["bankroll"]),
+            bet_history=item["bet_history"],
+            pitch_index=int(item["pitch_index"]),
+            table=table
+        )
 
+    # otherwise, create a new user with the default bankroll and empty bet history
     else:
-        item = create_user(user_id, table)
+        user = create_user(user_id, table)
 
-    return item
+    return user
 
 def advance_pitch(user_id, i):
     table = get_table()
