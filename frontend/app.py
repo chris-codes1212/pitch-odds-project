@@ -22,6 +22,12 @@ def fetch_prediction():
     return response.json()
 
 
+def fetch_balance():
+    response = requests.get(f"{BACKEND_URL}/balance", params={'user_id': st.session_state.user_id})
+    response.raise_for_status()
+    return response.json()['balance']
+
+
 def wait_for_backend():
     for _ in range(10):
         try:
@@ -31,6 +37,46 @@ def wait_for_backend():
         except requests.exceptions.RequestException:
             time.sleep(2)
     return False
+
+
+def render_balance():
+    try:
+        balance = fetch_balance()
+        st.markdown(
+            f"""
+            <div style="
+                border: 2px solid #4CAF50;
+                border-radius: 5px;
+                padding: 10px;
+                margin-bottom: 20px;
+                background-color: #f9f9f9;
+                text-align: center;
+                font-size: 18px;
+                font-weight: bold;
+            ">
+                Current Balance: ${balance:.2f}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    except:
+        st.markdown(
+            f"""
+            <div style="
+                border: 2px solid #f44336;
+                border-radius: 5px;
+                padding: 10px;
+                margin-bottom: 20px;
+                background-color: #ffebee;
+                text-align: center;
+                font-size: 18px;
+                font-weight: bold;
+            ">
+                Unable to load balance
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 
 # ---------------------------
@@ -102,9 +148,16 @@ def render_odds_buttons(vig=0.08):
 def render_place_bet():
     if st.session_state.selected_bet:
         st.success(f"Selected: {st.session_state.selected_bet}")
-
+        st.session_state.bet_amount = st.text_input("Bet Amount ($)", value="10")
         if st.button("Place Bet"):
+            response = requests.post(f"{BACKEND_URL}/bet", 
+                                     json={'user_id': st.session_state.user_id, 
+                                           'bet': st.session_state.selected_bet, 
+                                           'amount': float(st.session_state.bet_amount),
+                                           'odds': st.session_state.bet_value})
+
             data = fetch_prediction()
+            
             st.session_state.probs = data["probabilities"]
             st.session_state.pitch = data["pitch"]
             st.session_state.selected_bet = None
@@ -117,6 +170,7 @@ def render_place_bet():
 
 def run_app():
     st.title("Live Pitch Odds Interface")
+    render_balance()
     st.subheader("An app to demonstrate live pitch betting odds")
 
     initialize_state()
