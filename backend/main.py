@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import time
 import pandas as pd
+import statsapi
 
 from .user_class import User
 
@@ -26,6 +28,16 @@ class BetRequest(BaseModel):
 
 
 app = FastAPI(title='Pitch-by-Pitch MLB Betting')
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"], # Next.js dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 #
 # Try and load model pipeline
 try:
@@ -130,3 +142,21 @@ def place_bet(req: BetRequest):
 def get_balance(user_id: str):
     user = sessions.get_user(user_id)
     return {"balance": user.get_bankroll()}
+
+@app.get("/live_games")
+def get_live_games():
+    live_games = []
+    # Placeholder for live games endpoint
+    # 1. Get today's games to find a live game_pk
+    today = statsapi.schedule()
+    for game in today:
+        #print(f"Game ID: {game['game_id']} | {game['away_name']} @ {game['home_name']} | Status: {game['status']}")
+        if game['status'] in ['Live', 'In Progress']:
+            live_games.append({
+                "game_id": game['game_id'],
+                "away_team": game['away_name'],
+                "home_team": game['home_name'],
+                "status": game['status']
+            })
+            #print(f"  Found live game: {game['game_id']} - {game['away_name']} @ {game['home_name']}")
+    return {"live_games": live_games}
